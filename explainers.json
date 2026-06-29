@@ -1,1 +1,8 @@
-[]
+[
+  {
+    "title": "RuleArena — Can LLMs Follow Real-World Rules?",
+    "arxiv": "https://arxiv.org/abs/2412.08972",
+    "date": "2026-06-29",
+    "file": "explainers/rulearena/index.html"
+  }
+]

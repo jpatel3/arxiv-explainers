@@ -1,0 +1,3 @@
+:HL["/arxiv-explainers/explainers/rulearena/_next/static/chunks/233p45nuh4m5b.css","style"]
+:HL["/arxiv-explainers/explainers/rulearena/_next/static/chunks/3ij0deng_x68x.css","style"]
+0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"/_not-found","param":null,"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}},"staleTime":300,"buildId":"bEaIDmUVO1LTSzb-5l1lp"}
