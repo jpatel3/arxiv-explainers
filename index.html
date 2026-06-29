@@ -31,6 +31,16 @@
         : file;
     }
 
+    // Only allow http(s) and same-origin relative URLs; block javascript:/data: etc.
+    function safeUrl(u) {
+      try {
+        const parsed = new URL(u, location.href);
+        return (parsed.protocol === "http:" || parsed.protocol === "https:") ? u : "#";
+      } catch {
+        return "#";
+      }
+    }
+
     function badgeFor(file) {
       return file.toLowerCase().endsWith(".md") ? "md" : "html";
     }
@@ -52,11 +62,11 @@
 
       list.innerHTML = valid.map(e => `
         <li>
-          <a class="entry" href="${linkFor(e.file)}">
+          <a class="entry" href="${escapeHtml(safeUrl(linkFor(e.file)))}">
             <div class="title">${escapeHtml(e.title)}</div>
             <div class="meta">
               <span class="badge">${badgeFor(e.file)}</span>
-              <a class="arxiv" href="${escapeHtml(e.arxiv)}" target="_blank" rel="noopener"
+              <a class="arxiv" href="${escapeHtml(safeUrl(e.arxiv))}" target="_blank" rel="noopener"
                  onclick="event.stopPropagation()">${escapeHtml(arxivId(e.arxiv))}</a>
               <span class="date">${escapeHtml(e.date)}</span>
             </div>
