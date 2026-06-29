@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>arXiv Explainers</title>
+  <meta name="description" content="A library of AI-generated visual explainers of arXiv papers." />
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="site">
+      <h1>arXiv Explainers</h1>
+      <p>Visual, AI-assisted walkthroughs of papers I'm reading.</p>
+    </header>
+
+    <ul class="list" id="list" aria-live="polite"></ul>
+  </div>
+
+  <script>
+    const REQUIRED = ["title", "arxiv", "date", "file"];
+
+    function isValid(e) {
+      return e && typeof e === "object" && REQUIRED.every(k => typeof e[k] === "string" && e[k].length);
+    }
+
+    function linkFor(file) {
+      // Markdown explainers open in the viewer; everything else links directly.
+      return file.toLowerCase().endsWith(".md")
+        ? "viewer.html?file=" + encodeURIComponent(file)
+        : file;
+    }
+
+    function badgeFor(file) {
+      return file.toLowerCase().endsWith(".md") ? "md" : "html";
+    }
+
+    function arxivId(url) {
+      const m = url.match(/(\d{4}\.\d{4,5})/);
+      return m ? "arXiv:" + m[1] : "arXiv";
+    }
+
+    function render(entries) {
+      const list = document.getElementById("list");
+      const valid = entries.filter(isValid)
+        .sort((a, b) => b.date.localeCompare(a.date));
+
+      if (!valid.length) {
+        list.innerHTML = '<li class="empty">No explainers yet. Add one to <code>explainers.json</code>.</li>';
+        return;
+      }
+
+      list.innerHTML = valid.map(e => `
+        <li>
+          <a class="entry" href="${linkFor(e.file)}">
+            <div class="title">${escapeHtml(e.title)}</div>
+            <div class="meta">
+              <span class="badge">${badgeFor(e.file)}</span>
+              <a class="arxiv" href="${escapeHtml(e.arxiv)}" target="_blank" rel="noopener"
+                 onclick="event.stopPropagation()">${escapeHtml(arxivId(e.arxiv))}</a>
+              <span class="date">${escapeHtml(e.date)}</span>
+            </div>
+          </a>
+        </li>`).join("");
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, c => (
+        { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+      ));
+    }
+
+    fetch("explainers.json")
+      .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+      .then(data => render(Array.isArray(data) ? data : []))
+      .catch(err => {
+        document.getElementById("list").innerHTML =
+          '<li class="error">Could not load explainers.json — ' + escapeHtml(err.message) + '</li>';
+      });
+  </script>
+</body>
+</html>
