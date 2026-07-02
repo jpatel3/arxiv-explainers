@@ -34,9 +34,13 @@
       content.innerHTML = '<p class="error">' + escapeHtml(msg) + "</p>";
     }
 
-    // Only allow loading markdown files from within this repo.
-    if (!file || !/^explainers\/[\w./-]+\.md$/i.test(file) || file.includes("..")) {
+    // Only allow loading markdown files from within this repo. The path may
+    // contain spaces/parens/etc. (index.html percent-encodes it), but must stay
+    // under explainers/, end in .md, and not traverse upward.
+    if (!file || !/^explainers\/[^?#]+\.md$/i.test(file) || file.includes("..")) {
       fail("No valid markdown file specified.");
+    } else if (typeof marked === "undefined" || typeof DOMPurify === "undefined") {
+      fail("Markdown renderer failed to load (CDN blocked or offline). The explainer file itself is fine.");
     } else {
       fetch(file)
         .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.text(); })

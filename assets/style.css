@@ -68,23 +68,32 @@ header.site a { color: var(--accent); }
 }
 
 .entry {
+  position: relative;
   display: block;
   padding: 18px 16px;
   border-bottom: 1px solid var(--border);
   border-radius: var(--radius);
-  text-decoration: none;
-  color: inherit;
   transition: background 0.12s ease;
 }
 
 .entry:hover { background: var(--surface-hover); }
 
-.entry .title {
+/* Title is the primary link; ::after stretches it over the whole card so the
+   entire row is clickable — without nesting the arxiv <a> inside it. */
+.entry-link {
+  display: block;
   font-size: 1.12rem;
   font-weight: 600;
   letter-spacing: -0.01em;
   margin: 0 0 6px;
   color: var(--text);
+  text-decoration: none;
+}
+.entry-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius);
 }
 
 .entry .meta {
@@ -96,6 +105,8 @@ header.site a { color: var(--accent); }
 }
 
 .entry .meta .arxiv {
+  position: relative;
+  z-index: 1; /* sit above the stretched title overlay so it stays clickable */
   color: var(--accent);
   text-decoration: none;
 }

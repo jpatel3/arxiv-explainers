@@ -31,7 +31,8 @@
         : file;
     }
 
-    // Only allow http(s) and same-origin relative URLs; block javascript:/data: etc.
+    // Allow only http(s) (and relative URLs that resolve to http/https);
+    // block javascript:/data:/etc. Manifest is self-authored, so this is defense-in-depth.
     function safeUrl(u) {
       try {
         const parsed = new URL(u, location.href);
@@ -46,12 +47,17 @@
     }
 
     function arxivId(url) {
-      const m = url.match(/(\d{4}\.\d{4,5})/);
+      // New-style (2412.08972) or old-style (math.GT/0309136) identifiers.
+      const m = url.match(/(\d{4}\.\d{4,5}|[a-z-]+(?:\.[A-Z]{2})?\/\d{7})/i);
       return m ? "arXiv:" + m[1] : "arXiv";
     }
 
     function render(entries) {
       const list = document.getElementById("list");
+      const dropped = entries.length - entries.filter(isValid).length;
+      if (dropped > 0) {
+        console.warn(`${dropped} explainers.json entry(ies) skipped — each needs string fields: ${REQUIRED.join(", ")}.`);
+      }
       const valid = entries.filter(isValid)
         .sort((a, b) => b.date.localeCompare(a.date));
 
@@ -61,16 +67,13 @@
       }
 
       list.innerHTML = valid.map(e => `
-        <li>
-          <a class="entry" href="${escapeHtml(safeUrl(linkFor(e.file)))}">
-            <div class="title">${escapeHtml(e.title)}</div>
-            <div class="meta">
-              <span class="badge">${badgeFor(e.file)}</span>
-              <a class="arxiv" href="${escapeHtml(safeUrl(e.arxiv))}" target="_blank" rel="noopener"
-                 onclick="event.stopPropagation()">${escapeHtml(arxivId(e.arxiv))}</a>
-              <span class="date">${escapeHtml(e.date)}</span>
-            </div>
-          </a>
+        <li class="entry">
+          <a class="entry-link" href="${escapeHtml(safeUrl(linkFor(e.file)))}">${escapeHtml(e.title)}</a>
+          <div class="meta">
+            <span class="badge">${badgeFor(e.file)}</span>
+            <a class="arxiv" href="${escapeHtml(safeUrl(e.arxiv))}" target="_blank" rel="noopener">${escapeHtml(arxivId(e.arxiv))}</a>
+            <span class="date">${escapeHtml(e.date)}</span>
+          </div>
         </li>`).join("");
     }
 
