@@ -102,8 +102,29 @@ arxiv-explainers/
   links and dates.
 - Confirm an `.html` explainer opens directly and a `.md` explainer renders via the viewer.
 
+## Pipeline / tooling (added 2026-07-02)
+
+Explainers arrive in three shapes; the second was painful enough by hand to
+warrant automation:
+
+- Plain `.html` / `.md` — copied straight into `explainers/`.
+- **z.ai "space" exports** — full Next.js apps (`.tar`). These need a one-time
+  static build before they can be hosted: strip server-only bits (`/api` route,
+  Prisma/db, websocket examples), configure `output: "export"` with
+  `basePath`/`assetPrefix` set to `/<repo>/explainers/<slug>`, `npm install`,
+  `next build`, then copy `out/` into `explainers/<slug>/`. A root `.nojekyll`
+  is required so GitHub Pages serves the `_next/` folder.
+
+**Decision:** automate this with a local, validated helper script
+(`tools/add-explainer.sh` → `tools/add-explainer.mjs`) rather than a CI build.
+Rationale: keeps the zero-build hosting model (nothing runs on push), gives fast
+local iteration, and avoids a CI pipeline that can break. The script derives the
+Pages base path from the git remote, auto-slugs the title, refuses duplicate
+arXiv ids, sanity-checks that exported HTML carries the expected base path, and
+commits (unless `--no-commit`). Pushing stays manual.
+
 ## Future Enhancements (out of scope for now)
 
 - Tags + client-side filtering/search.
 - Auto-generated thumbnails / preview cards.
-- A small helper script to append manifest entries.
+- Optional CI safety-net that rebuilds `.tar` exports on push.
